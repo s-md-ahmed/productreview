@@ -63,6 +63,16 @@ async function addProduct() {
     return;
   }
 
+  // ✅ Fetch all products and check for duplicate name
+  const res = await fetch("http://localhost:5000/api/products");
+  const products = await res.json();
+  const exists = products.some(p => p.name.toLowerCase() === name.toLowerCase());
+
+  if (exists) {
+    alert("❌ A product with this name already exists.");
+    return;
+  }
+
   try {
     const response = await fetch("http://localhost:5000/api/products", {
       method: "POST",
@@ -79,6 +89,7 @@ async function addProduct() {
     alert("❌ Error adding product.");
   }
 }
+
 async function displayProducts() {
   const container = document.getElementById("product-list");
   if (!container) return;

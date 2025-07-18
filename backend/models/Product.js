@@ -4,11 +4,15 @@ const productSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    unique: true, // ✅ Prevents duplicate names
+    unique: true,
     trim: true
   },
   description: {
     type: String,
+    required: true
+  },
+  imageUrl: {
+    type: String, // ✅ This will hold the image link
     required: true
   },
   reviews: [{

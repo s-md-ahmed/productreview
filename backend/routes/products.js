@@ -11,11 +11,13 @@ router.get('/', async (req, res) => {
 
 // POST new product
 router.post('/', async (req, res) => {
-  const { name, description } = req.body;
-  const newProduct = new Product({ name, description });
+  const { name, description, imageUrl } = req.body;
+
+  const newProduct = new Product({ name, description, imageUrl });
   await newProduct.save();
   res.json(newProduct);
 });
+
 
 // POST new review for a product
 router.post('/:id/reviews', async (req, res) => {

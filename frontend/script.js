@@ -8,46 +8,47 @@ function saveProducts(products) {
   localStorage.setItem("products", JSON.stringify(products));
 }
 
-// Auto-detect product name from image (placeholder logic)
 function autoDetectProductTitle() {
   const url = document.getElementById("imageUrl").value;
   const nameInput = document.getElementById("productName");
 
-  if (url.trim() === "") {
+  if (!url.trim()) {
     alert("Please enter an image URL first.");
     return;
   }
 
   try {
     const urlObj = new URL(url);
-    const pathSegments = urlObj.pathname.split("/");
 
-    // Extract brand from hostname (word before ".com")
-    let hostParts = urlObj.hostname.split(".");
+    // --- Extract brand from domain ---
+    const hostParts = urlObj.hostname.split('.');
     let brand = "";
-
-    for (let i = 0; i < hostParts.length; i++) {
-      if (hostParts[i] === "com" && i > 0) {
-        brand = hostParts[i - 1];
+    for (let part of hostParts) {
+      if (!["www", "com", "net", "cdn", "assets", "static", "images", "img", "media"].includes(part)) {
+        brand = part;
         break;
       }
     }
+    brand = brand.charAt(0).toUpperCase() + brand.slice(1); // capitalize
 
-    brand = brand.charAt(0).toUpperCase() + brand.slice(1); // Capitalize
+    // --- Extract model from filename ---
+    const fileName = urlObj.pathname.split('/').pop().split('.')[0]; // "NIKE+DUNK+LOW+RETRO"
+    const decodedFileName = decodeURIComponent(fileName); // handle + and %20
+    let modelName = decodedFileName
+      .replace(/[_\-+]/g, ' ') // convert to spaces
+      .replace(/\b\w/g, char => char.toUpperCase()) // capitalize words
+      .trim();
 
-    const tIndex = pathSegments.indexOf("t");
-    if (tIndex !== -1 && pathSegments.length > tIndex + 1) {
-      let productSlug = pathSegments[tIndex + 1];
-      let productTitle = productSlug
-        .replace(/-/g, " ")
-        .replace(/\b\w/g, char => char.toUpperCase());
+    // --- Remove brand from modelName if it starts with it ---
+    const brandRegex = new RegExp(`^${brand}\\b`, 'i'); // match "Nike" at start of string
+    modelName = modelName.replace(brandRegex, "").trim();
 
-      let finalTitle = `${brand} ${productTitle}`;
-      nameInput.value = finalTitle;
-    } else {
-      nameInput.value = "Unknown Product";
-    }
-  } catch (error) {
+    // --- Final output ---
+    const finalTitle = `${brand} ${modelName}`.trim();
+    nameInput.value = finalTitle || "Unknown Product";
+
+  } catch (err) {
+    console.error("❌ Invalid URL format:", err);
     alert("Invalid URL format.");
     nameInput.value = "";
   }
@@ -57,9 +58,10 @@ function autoDetectProductTitle() {
 async function addProduct() {
   const name = document.getElementById("productName").value.trim();
   const desc = document.getElementById("productDescription").value.trim();
+  const imageUrl = document.getElementById("imageUrl").value.trim();
 
-  if (!name || !desc) {
-    alert("Name and description are required.");
+  if (!name || !desc || !imageUrl) {
+    alert("Name, description, and image URL are required.");
     return;
   }
 
@@ -77,7 +79,7 @@ async function addProduct() {
     const response = await fetch("http://localhost:5000/api/products", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, description: desc })
+      body: JSON.stringify({ name, description: desc, imageUrl })
     });
 
     if (!response.ok) throw new Error("Failed to add product");
@@ -89,6 +91,7 @@ async function addProduct() {
     alert("❌ Error adding product.");
   }
 }
+
 
 async function displayProducts() {
   const container = document.getElementById("product-list");
@@ -106,7 +109,8 @@ async function displayProducts() {
 
       const html = `
         <div class="card bg-dark text-light p-3 shadow rounded-4" data-product-id="${product._id}">
-          ${product.img ? `<img src="${product.img}" class="product-img mb-3" />` : ""}
+          ${product.imageUrl ? `<img src="${product.imageUrl}" class="product-img mb-3" />` : ""}
+
           <h4>${product.name}</h4>
           <p>${product.description}</p>
           <form onsubmit="submitReview(event, '${product._id}')">
@@ -230,7 +234,8 @@ async function refreshSingleProduct(productId) {
     if (!card) return;
 
     const updatedHtml = `
-      ${product.img ? `<img src="${product.img}" class="product-img mb-3" />` : ""}
+      ${product.imageUrl ? `<img src="${product.imageUrl}" class="product-img mb-3" />` : ""}
+
       <h4>${product.name}</h4>
       <p>${product.description}</p>
       <form onsubmit="submitReview(event, '${product._id}')">

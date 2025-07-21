@@ -14,6 +14,7 @@ function getLoggedInUser() {
 function autoDetectProductTitle() {
   const url = document.getElementById("imageUrl").value;
   const nameInput = document.getElementById("productName");
+  const descInput = document.getElementById("productDescription"); // 👈 get description field
 
   if (!url.trim()) {
     alert("Please enter an image URL first.");
@@ -30,20 +31,30 @@ function autoDetectProductTitle() {
         break;
       }
     }
+
     brand = brand.charAt(0).toUpperCase() + brand.slice(1);
+
     const fileName = urlObj.pathname.split('/').pop().split('.')[0];
     let modelName = decodeURIComponent(fileName)
       .replace(/[_\-+]/g, ' ')
       .replace(/\b\w/g, char => char.toUpperCase())
       .trim();
+
     const brandRegex = new RegExp(`^${brand}\\b`, 'i');
     modelName = modelName.replace(brandRegex, "").trim();
+
     const finalTitle = `${brand} ${modelName}`.trim();
+
     nameInput.value = finalTitle || "Unknown Product";
+    
+    // 👇 Also fill description intelligently
+    descInput.value = modelName || "Auto-detected product";
+
   } catch (err) {
     console.error("❌ Invalid URL format:", err);
     alert("Invalid URL format.");
     nameInput.value = "";
+    descInput.value = "";
   }
 }
 

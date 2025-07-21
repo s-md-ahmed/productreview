@@ -106,10 +106,12 @@
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem('userEmail', email);
-        alert('✅ Login successful!');
-        window.location.href = '/home';
-      } else {
+  // ✅ Save name and email
+  localStorage.setItem('user', JSON.stringify(data.user));
+  alert('✅ Login successful!');
+  window.location.href = '/home';
+}
+ else {
         alert(`❌ ${data.error}`);
       }
     } catch (err) {

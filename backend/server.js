@@ -8,31 +8,35 @@ require('dotenv').config();
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Database connection
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB connected'))
   .catch(err => console.error('❌ MongoDB connection error:', err));
+
+// Serve static frontend assets first (CSS, client-side JS, etc.)
+app.use(express.static(path.join(__dirname, '../frontend')));
+
 // User auth routes
-// 👇 FIX THIS in server.js
 app.use('/api/users', require('./routes/user'));
 
-
-// Product API
+// Product API routes
 app.use('/api/products', require('./routes/products'));
-// Register page = /
+
+// Frontend HTML page routes
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/register.html'));
 });
 
-// Login page = /login
 app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/login.html'));
 });
 
-// Home page = /home
 app.get('/home', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
-app.use(express.static(path.join(__dirname, '../frontend')));
+
+// Server listener
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);

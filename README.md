@@ -17,6 +17,9 @@ A full-stack web application built with Node.js, Express, and MongoDB for managi
 - **Frontend**: HTML5, CSS3, Bootstrap 5, Vanilla JavaScript, FontAwesome
 
 ---
+## Architecture Diagram**
+<img width="1641" height="1021" alt="image" src="https://github.com/user-attachments/assets/49ba8194-e93c-4269-9af5-6a40e798f1fd" />
+
 
 ## Project Structure
 
@@ -41,5 +44,3 @@ productreview/
 ├── .env
 ├── package-lock.json
 └── package.json
-**Architecture Diagram**
-<img width="1641" height="1021" alt="image" src="https://github.com/user-attachments/assets/49ba8194-e93c-4269-9af5-6a40e798f1fd" />

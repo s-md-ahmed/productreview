@@ -18,7 +18,8 @@ A full-stack web application built with Node.js, Express, and MongoDB for managi
 
 ---
 ## Architecture Diagram**
-<img width="1641" height="1021" alt="image" src="https://github.com/user-attachments/assets/49ba8194-e93c-4269-9af5-6a40e798f1fd" />
+<img width="3245" height="6236" alt="diagram (4)" src="https://github.com/user-attachments/assets/1a4bdca6-57f6-4970-a4e7-65bd64a4e4ca" />
+
 
 
 ## Project Structure

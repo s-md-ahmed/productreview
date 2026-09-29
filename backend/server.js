@@ -14,8 +14,11 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB connected'))
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
-// Serve static frontend assets first (CSS, client-side JS, etc.)
-app.use(express.static(path.join(__dirname, '../frontend')));
+// Define absolute path to the frontend folder
+const frontendPath = path.join(__dirname, '../frontend');
+
+// Serve static frontend assets first (CSS, client-side JS, images, etc.)
+app.use(express.static(frontendPath));
 
 // User auth routes
 app.use('/api/users', require('./routes/user'));
@@ -25,15 +28,15 @@ app.use('/api/products', require('./routes/products'));
 
 // Frontend HTML page routes
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/register.html'));
+  res.sendFile(path.join(frontendPath, 'register.html'));
 });
 
 app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/login.html'));
+  res.sendFile(path.join(frontendPath, 'login.html'));
 });
 
 app.get('/home', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/index.html'));
+  res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
 // Server listener

@@ -14,7 +14,7 @@ function getLoggedInUser() {
 function autoDetectProductTitle() {
   const url = document.getElementById("imageUrl").value;
   const nameInput = document.getElementById("productName");
-  const descInput = document.getElementById("productDescription"); // 👈 get description field
+  const descInput = document.getElementById("productDescription");
 
   if (!url.trim()) {
     alert("Please enter an image URL first.");
@@ -46,8 +46,6 @@ function autoDetectProductTitle() {
     const finalTitle = `${brand} ${modelName}`.trim();
 
     nameInput.value = finalTitle || "Unknown Product";
-    
-    // 👇 Also fill description intelligently
     descInput.value = modelName || "Auto-detected product";
 
   } catch (err) {
@@ -68,17 +66,17 @@ async function addProduct() {
     return;
   }
 
-  const res = await fetch("http://localhost:5000/api/products");
-  const products = await res.json();
-  const exists = products.some(p => p.name.toLowerCase() === name.toLowerCase());
-
-  if (exists) {
-    alert("❌ A product with this name already exists.");
-    return;
-  }
-
   try {
-    const response = await fetch("http://localhost:5000/api/products", {
+    const res = await fetch("/api/products");
+    const products = await res.json();
+    const exists = products.some(p => p.name.toLowerCase() === name.toLowerCase());
+
+    if (exists) {
+      alert("❌ A product with this name already exists.");
+      return;
+    }
+
+    const response = await fetch("/api/products", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, description: desc, imageUrl })
@@ -87,7 +85,7 @@ async function addProduct() {
     if (!response.ok) throw new Error("Failed to add product");
 
     alert("✅ Product Added Successfully");
-    window.location.href = "index.html";
+    window.location.href = "/product.html";
   } catch (err) {
     console.error(err);
     alert("❌ Error adding product.");
@@ -99,7 +97,7 @@ async function displayProducts() {
   if (!container) return;
 
   try {
-    const res = await fetch("http://localhost:5000/api/products");
+    const res = await fetch("/api/products");
     const products = await res.json();
     const currentUser = getLoggedInUser();
 
@@ -117,8 +115,8 @@ async function displayProducts() {
                 <strong>${r.username}</strong> ⭐ ${r.rating}
                 <p>${r.comment}</p>
                 ${isOwner ? `
-                  <button class="btn btn-sm btn-outline-warning me-2" onclick="openEdit('${product._id}', '${r._id}', '${r.username}', ${r.rating}, \`${r.comment.replace(/`/g, '\\`')}\`)">✏️ Patch</button>
-                  <button class="btn btn-sm btn-outline-info me-2" onclick="openPutEdit('${product._id}', '${r._id}', '${r.username}', ${r.rating}, \`${r.comment.replace(/`/g, '\\`')}\`)">🛠️ Put</button>
+                  <button class="btn btn-sm btn-outline-warning me-2" onclick="openEdit('${product._id}', '${r._id}', '${r.username}',${r.rating}, \`${r.comment.replace(/`/g, '\\`')}\`)">✏️ Patch</button>
+                  <button class="btn btn-sm btn-outline-info me-2" onclick="openPutEdit('${product._id}', '${r._id}', '${r.username}',${r.rating}, \`${r.comment.replace(/`/g, '\\`')}\`)">🛠️ Put</button>
                   <button class="btn btn-sm btn-outline-danger" onclick="deleteReview('${product._id}', '${r._id}')">🗑️ Delete</button>
                 ` : ""}
               </div>
@@ -132,12 +130,12 @@ async function displayProducts() {
           <h4>${product.name}</h4>
           <p>${product.description}</p>
           <form onsubmit="submitReview(event, '${product._id}')">
-            <input class="form-control mb-2" value="${currentUser?.name || currentUser?.email}" readonly />
+            <input class="form-control mb-2" value="${currentUser?.name || currentUser?.email || ''}" readonly />
             <input type="number" class="form-control mb-2" placeholder="Rating (1-5)" min="1" max="5" required />
-            <textarea class="form-control mb-2" placeholder="Comment"></textarea>
+            <textarea class="form-control mb-2" placeholder="Comment" required></textarea>
             <button class="btn btn-outline-success w-100">💬 Add Review</button>
           </form>
-          <button class="btn btn-sm btn-outline-danger mb-2" onclick="deleteProduct('${product._id}')">🗑️ Delete Product</button>
+          <button class="btn btn-sm btn-outline-danger mb-2 mt-2" onclick="deleteProduct('${product._id}')">🗑️ Delete Product</button>
           <div class="mt-3">${reviewsHtml}</div>
         </div>
       `;
@@ -172,7 +170,7 @@ async function submitReview(event, productId) {
   }
 
   try {
-    const res = await fetch(`http://localhost:5000/api/products/${productId}/reviews`, {
+    const res = await fetch(`/api/products/${productId}/reviews`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, rating, comment })
@@ -230,7 +228,7 @@ async function submitEdit(event, productId, reviewId, method) {
     data.username = form.username?.value.trim();
   }
 
-  const res = await fetch(`http://localhost:5000/api/products/${productId}/reviews/${reviewId}`, {
+  const res = await fetch(`/api/products/${productId}/reviews/${reviewId}`, {
     method,
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data)
@@ -246,7 +244,7 @@ async function submitEdit(event, productId, reviewId, method) {
 function deleteReview(productId, reviewId) {
   if (!confirm("🗑️ Are you sure you want to delete this review?")) return;
 
-  fetch(`http://localhost:5000/api/products/${productId}/reviews/${reviewId}`, {
+  fetch(`/api/products/${productId}/reviews/${reviewId}`, {
     method: "DELETE"
   })
     .then(res => res.json())
@@ -259,7 +257,7 @@ function deleteReview(productId, reviewId) {
 
 async function refreshSingleProduct(productId) {
   try {
-    const res = await fetch(`http://localhost:5000/api/products/${productId}`);
+    const res = await fetch(`/api/products/${productId}`);
     const product = await res.json();
     const currentUser = getLoggedInUser();
 
@@ -274,8 +272,8 @@ async function refreshSingleProduct(productId) {
               <strong>${r.username}</strong> ⭐ ${r.rating}
               <p>${r.comment}</p>
               ${isOwner ? `
-                <button class="btn btn-sm btn-outline-warning me-2" onclick="openEdit('${product._id}', '${r._id}', '${r.username}', ${r.rating}, \`${r.comment.replace(/`/g, '\\`')}\`)">✏️ Patch</button>
-                <button class="btn btn-sm btn-outline-info me-2" onclick="openPutEdit('${product._id}', '${r._id}', '${r.username}', ${r.rating}, \`${r.comment.replace(/`/g, '\\`')}\`)">🛠️ Put</button>
+                <button class="btn btn-sm btn-outline-warning me-2" onclick="openEdit('${product._id}', '${r._id}', '${r.username}',${r.rating}, \`${r.comment.replace(/`/g, '\\`')}\`)">✏️ Patch</button>
+                <button class="btn btn-sm btn-outline-info me-2" onclick="openPutEdit('${product._id}', '${r._id}', '${r.username}',${r.rating}, \`${r.comment.replace(/`/g, '\\`')}\`)">🛠️ Put</button>
                 <button class="btn btn-sm btn-outline-danger" onclick="deleteReview('${product._id}', '${r._id}')">🗑️ Delete</button>
               ` : ""}
             </div>
@@ -288,11 +286,12 @@ async function refreshSingleProduct(productId) {
       <h4>${product.name}</h4>
       <p>${product.description}</p>
       <form onsubmit="submitReview(event, '${product._id}')">
-        <input class="form-control mb-2" value="${currentUser?.name || currentUser?.email}" readonly />
+        <input class="form-control mb-2" value="${currentUser?.name || currentUser?.email || ''}" readonly />
         <input type="number" class="form-control mb-2" placeholder="Rating (1-5)" min="1" max="5" required />
-        <textarea class="form-control mb-2" placeholder="Comment"></textarea>
+        <textarea class="form-control mb-2" placeholder="Comment" required></textarea>
         <button class="btn btn-outline-success w-100">💬 Add Review</button>
       </form>
+      <button class="btn btn-sm btn-outline-danger mb-2 mt-2" onclick="deleteProduct('${product._id}')">🗑️ Delete Product</button>
       <div class="mt-3">${reviewsHtml}</div>
     `;
 
@@ -306,7 +305,7 @@ async function deleteProduct(productId) {
   if (!confirm("Are you sure you want to delete this product and all its reviews?")) return;
 
   try {
-    const res = await fetch(`http://localhost:5000/api/products/${productId}`, {
+    const res = await fetch(`/api/products/${productId}`, {
       method: "DELETE"
     });
 

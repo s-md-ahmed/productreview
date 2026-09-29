@@ -17,8 +17,8 @@ mongoose.connect(process.env.MONGO_URI)
 // Define absolute path to the frontend folder
 const frontendPath = path.join(__dirname, '../frontend');
 
-// Serve static frontend assets first (CSS, client-side JS, images, etc.)
-app.use(express.static(frontendPath));
+// Serve static frontend assets WITHOUT auto-serving index.html at root
+app.use(express.static(frontendPath, { index: false }));
 
 // User auth routes
 app.use('/api/users', require('./routes/user'));
@@ -26,7 +26,7 @@ app.use('/api/users', require('./routes/user'));
 // Product API routes
 app.use('/api/products', require('./routes/products'));
 
-// Frontend HTML page routes
+// Frontend HTML page routes (Register is now explicitly the root handler)
 app.get('/', (req, res) => {
   res.sendFile(path.join(frontendPath, 'register.html'));
 });
